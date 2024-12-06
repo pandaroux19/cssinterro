@@ -1,0 +1,127 @@
+<div x-data="Recettes()" x-init="init()" class="p-4 bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Filtrer par difficulté</h2>
+            <div class="flex space-x-4">
+                <button @click="definirDifficulte('facile')"
+                :class="{
+                    'bg-green-600': difficulteSelectionnee === 'facile', 
+                    'hover:bg-green-500': difficulteSelectionnee !== 'facile',
+                    'text-white': difficulteSelectionnee === 'facile', 
+                    'text-green-600': difficulteSelectionnee !== 'facile',
+                    'border border-green-600': true, 
+                    'shadow-md': true, 
+                    'px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400': true
+                }">
+            Facile
+        </button>
+        <button @click="definirDifficulte('moyenne')"
+                :class="{
+                    'bg-orange-600': difficulteSelectionnee === 'moyenne',
+                    'hover:bg-orange-500': difficulteSelectionnee !== 'moyenne',
+                    'text-white': difficulteSelectionnee === 'moyenne',
+                    'text-orange-600': difficulteSelectionnee !== 'moyenne',
+                    'border border-orange-600': true,
+                    'shadow-md': true,
+                    'px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400': true
+                }">
+            Moyenne
+        </button>
+        <button @click="definirDifficulte('difficile')"
+                :class="{
+                    'bg-red-600': difficulteSelectionnee === 'difficile',
+                    'hover:bg-red-500': difficulteSelectionnee !== 'difficile',
+                    'text-white': difficulteSelectionnee === 'difficile',
+                    'text-red-600': difficulteSelectionnee !== 'difficile',
+                    'border border-red-600': true,
+                    'shadow-md': true,
+                    'px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400': true
+                }">
+            Difficile
+        </button>
+            </div>
+        </div>
+        <div class="flex items-center mb-4">
+            <span class="text-lg font-semibold text-gray-700 mr-2">Recettes:</span>
+            <span class="bg-purple-400 text-white px-3 py-1 rounded-full text-sm">
+                <span x-text="recettesFiltrees.length"></span>
+            </span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <template x-for="recette in recettesFiltrees" :key="recette.id">
+                <div class="recipe-card bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl hover:scale-105 transition-transform duration-300">
+                    <div class="recipe-image relative">
+                        <img :src="recette.imageUrl" :alt="recette.title" class="w-full h-48 object-cover">
+                        <span class="absolute top-2 right-2 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                            <span x-text="recette.difficulty"></span>
+                        </span>
+                    </div>
+                    <div class="recipe-content p-4">
+                        <h2 class="recipe-title text-xl font-bold text-gray-800 mb-3" x-text="recette.title"></h2>
+                        <div class="recipe-meta text-sm text-gray-600 mb-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="font-semibold text-gray-700">Catégorie:</span>
+                                <span x-text="recette.category"></span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-semibold text-gray-700">Temps:</span>
+                                <span x-text="`${recette.preparationTime} min`"></span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-semibold text-gray-700">Portions:</span>
+                                <span x-text="recette.servings"></span>
+                            </div>
+                        </div>
+                        <button @click="ouvrirModale(recette)" 
+                                class="bg-purple-500 text-white px-4 py-2 rounded-md w-full hover:bg-purple-600 transition">
+                            Voir les détails
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+        <div x-show="modaleOuverte" @click.away="fermerModale"
+            class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-6 max-w-lg w-full relative shadow-lg">
+                <button @click="fermerModale"
+                    class="absolute top-4 right-4 bg-red-400 text-white p-2 rounded-full shadow-md focus:outline-none hover:bg-red-500 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4" x-text="recetteActuelle.title"></h2>
+                <div class="text-sm text-gray-600 mb-4">
+                    <p><strong>Catégorie:</strong> <span x-text="recetteActuelle.category"></span></p>
+                    <p><strong>Difficulté:</strong> <span x-text="recetteActuelle.difficulty"></span></p>
+                    <p><strong>Temps de préparation:</strong> <span
+                            x-text="`${recetteActuelle.preparationTime} min`"></span></p>
+                    <p><strong>Portions:</strong> <span x-text="recetteActuelle.servings"></span></p>
+                </div>
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-800">Ingrédients:</h3>
+                    <ul class="list-disc pl-6 text-gray-600">
+                        <template x-for="ingredient in recetteActuelle.ingredients" :key="ingredient.name">
+                            <li x-text="`${ingredient.quantity} ${ingredient.unit} de ${ingredient.name}`"></li>
+                        </template>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-800">Instructions:</h3>
+                    <div x-show="etapeActuelle >= 0 && etapeActuelle < recetteActuelle.instructions.length"
+                        class="transition-opacity duration-500">
+                        <p class="text-gray-600" x-text="recetteActuelle.instructions[etapeActuelle]"></p>
+                    </div>
+                    <div class="flex justify-between mt-4">
+                        <button @click="etapePrecedente" :disabled="etapeActuelle === 0"
+                            class="bg-gray-400 text-white px-4 py-2 rounded-md disabled:opacity-50 hover:bg-gray-500 transition">Précédent</button>
+                        <button @click="etapeSuivante"
+                            :disabled="etapeActuelle === recetteActuelle.instructions.length - 1"
+                            class="bg-green-400 text-white px-4 py-2 rounded-md disabled:opacity-50 hover:bg-green-500 transition">Suivant</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
